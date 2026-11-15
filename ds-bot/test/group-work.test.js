@@ -1094,6 +1094,14 @@ test('room-progress answers for any part of the group\'s own Session', async (t)
   assert.equal((await host.call('room-progress', { roomId: 'r1' })).value[0]?.callId, 'c1')
 })
 
+test('room-log returns log entries by room id or session part id and [] when unknown', async (t) => {
+  const entries = [{ who: 'User', text: 'hi' }, { who: 'Chief', text: 'ack' }]
+  const host = await start(t, { sessionId: 's1', parts: [{ sessionId: 'r1', endedAt: 1 }], log: entries })
+  assert.deepEqual(await host.call('room-log', { roomId: 'r1' }), { ok: true, value: entries })
+  assert.deepEqual(await host.call('room-log', { roomId: 's1' }), { ok: true, value: entries })
+  assert.deepEqual(await host.call('room-log', { roomId: 'missing-room' }), { ok: true, value: [] })
+})
+
 test('what a member writes while it works shows in the round at once, and its @ calls members', async (t) => {
   const host = await start(t)
   const result = host.round('c1', host.say('@Writer 整理文档'))

@@ -198,3 +198,15 @@ test('a reading host follows the other host\'s keys, never writes them, and keep
   const saved = JSON.parse(readFileSync(secretsPath, 'utf8')).secrets.map(secret => secret.name).sort()
   assert.deepEqual(saved, ['FIRST_KEY', 'MINE', 'SECOND_KEY', 'THIRD_KEY'])
 })
+
+test('room-log remains readable when another dsh holds the team', async (t) => {
+  const home = tempHome(t)
+  const entries = [{ who: 'User', text: 'ro-check' }]
+  writeFileSync(join(home, 'state.json'), JSON.stringify({
+    ...TEAM,
+    rooms: { r1: { id: 'r1', name: 'Ops', members: ['m1'], mode: 'admin', admin: 'm1', named: true, sessions: { m1: 'g1' }, log: entries, seq: 0, seen: {} } },
+  }))
+  writeFileSync(join(home, 'state.lock'), JSON.stringify({ pid: process.ppid, host: hostname(), token: 'other' }))
+  const call = start(t, home)
+  assert.deepEqual(await call('room-log', { roomId: 'r1' }), { ok: true, value: entries })
+})
