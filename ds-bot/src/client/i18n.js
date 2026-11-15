@@ -14,6 +14,7 @@ const ZH = {
   'Not read yet': '未读',
   Search: '搜索',
   'New chat': '新对话',
+  Chat: '对话',
   'Back to chat': '返回对话',
   'New…': '新建',
   'Collapse sidebar': '收起侧边栏',

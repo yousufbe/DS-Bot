@@ -149,3 +149,28 @@ test('the Bot header follows a later host header registration and releases its s
   assert.equal(entries.length, 0)
   assert.equal(listeners.size, 0)
 })
+
+test('a Bot header shows a 1-click Fleet pill when dsh-context fleet view is registered and toggles chat/fleet', () => {
+  const state = { view: 'chat' }
+  const views = [{ id: 'chat' }, { id: 'fleet' }]
+  const tree = header({}, {
+    useStore: hook(state),
+    useConversationViews: hook(views),
+    selectView: (view) => { state.view = view },
+  })
+  const fleetBtn = tree.children.find(c => c?.props?.className?.includes('bt-fleet-pill'))
+  assert.ok(fleetBtn, 'expected bt-fleet-pill button when fleet view is available')
+  assert.equal(fleetBtn.props['aria-pressed'], false)
+  fleetBtn.props.onClick()
+  assert.equal(state.view, 'fleet')
+
+  const awayTree = header({}, {
+    useStore: hook(state),
+    useConversationViews: hook(views),
+    selectView: (view) => { state.view = view },
+  })
+  const awayFleetBtn = awayTree.children.find(c => c?.props?.className?.includes('bt-fleet-pill'))
+  assert.equal(awayFleetBtn.props['aria-pressed'], true)
+  awayFleetBtn.props.onClick()
+  assert.equal(state.view, 'chat')
+})

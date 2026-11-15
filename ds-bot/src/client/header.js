@@ -1,7 +1,7 @@
 import { createElement as h, Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { currentPart, latestMemoryChange } from './text.js'
-import { ArrowUpIcon, CloseIcon, ArrowDownIcon, MemoryIcon } from './icons.js'
+import { ArrowUpIcon, CloseIcon, ArrowDownIcon, MemoryIcon, GaugeIcon } from './icons.js'
 import { botState, BotAvatar, RoomAvatar } from './mark.js'
 import { ActivityIndicator } from './activity-row.js'
 import { clockLabel, openingTurn, unseenSince } from './cells.js'
@@ -48,6 +48,9 @@ export function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus
   const selectedView = useStore?.(state => state.view)
   const away = useConversationViews?.(views => views.some(view => view.id === selectedView && view.id !== 'chat')) === true
     && typeof selectView === 'function'
+  const hasFleet = useConversationViews?.(views => views.some(view => view.id === 'fleet')) === true
+    && typeof selectView === 'function'
+  const fleetOpen = hasFleet && selectedView === 'fleet'
   const title = useSessions(list => list.byId[sessionId]?.displayTitle ?? list.byId[sessionId]?.title ?? '')
   const firstTurns = useSessions((list) => {
     const outline = list.projectionsBySession?.[sessionId]?.values?.turnOutline ?? list.byId[sessionId]?.projectionValues?.turnOutline
@@ -109,6 +112,16 @@ export function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus
     h('span', { className: 'bt-pill-name' }, away ? t('Back to chat') : bot?.name ?? room?.name ?? (title || t('New chat'))),
     h(MemoryNotice, { shown: memoryNotice }),
     h('span', { className: 'bt-pill-go', 'aria-hidden': true }, h(GoArrow))),
+    hasFleet ? h('button', {
+      type: 'button',
+      className: 'bt-pill bt-fleet-pill',
+      'aria-pressed': fleetOpen,
+      'aria-label': fleetOpen ? t('Back to chat') : 'Fleet observability',
+      title: fleetOpen ? t('Back to chat') : 'Open multi-agent Fleet observability',
+      onClick: () => selectView(fleetOpen ? 'chat' : 'fleet'),
+    },
+    h('span', { className: 'bt-fleet-ico', 'aria-hidden': true }, h(GaugeIcon)),
+    h('span', { className: 'bt-pill-name' }, fleetOpen ? t('Chat') : 'Fleet')) : null,
     h('span', { className: 'bt-sr', role: 'status' }, memoryNotice ? t('Memory updated') : ''),
     h(NewMessagePills, { key: sessionId, sessionId, useSessions, useUi, useTurnClock }),
     h(ActivityIndicator, { key: `activity:${sessionId}`, sessionId, useRoster, useSessionStatus, useSession, useLive, useWork, actions }))

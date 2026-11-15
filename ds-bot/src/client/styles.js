@@ -181,8 +181,12 @@ html[data-bt-collapsing] [class*="_frame"]:has(>[class*="_sidebarCol"]){transiti
 .bt-dot-wait{background:var(--bt-star)}
 .bt-side-foot{display:flex;padding-top:8px}
 
-.bt-head{position:relative;display:flex;justify-content:center;align-items:center;height:40px;flex:none;pointer-events:none}
+.bt-head{position:relative;display:flex;justify-content:center;align-items:center;gap:8px;height:40px;flex:none;pointer-events:none}
 .bt-pill{pointer-events:auto;display:inline-flex;align-items:center;gap:8px;height:40px;padding:7.5px 13.5px 7.5px 7.5px;border-radius:999px;background:var(--bt-main);border:.5px solid var(--bt-line-2);box-shadow:0 2px 8px -1px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);color:var(--bt-ink);font-family:inherit;font-size:14px;line-height:20px;cursor:pointer;max-width:70%;box-sizing:border-box;transition:background-color .12s ease,transform ${SPRING_TAP.duration}ms ${SPRING_TAP.easing}}
+.bt-fleet-pill{height:34px;padding:0 12px;gap:6px;font-size:13px}
+.bt-fleet-pill[aria-pressed=true]{border-color:color-mix(in srgb,var(--bt-accent) 45%,var(--bt-line-2));color:var(--bt-accent)}
+.bt-fleet-ico{display:inline-flex;align-items:center;width:15px;height:15px;color:var(--bt-accent)}
+.bt-fleet-ico svg{width:15px;height:15px}
 .bt-pill:hover{background:color-mix(in srgb,var(--bt-main),#777 9%)}
 .bt-pill:active{transform:scale(.965)}
 .bt-pill-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}

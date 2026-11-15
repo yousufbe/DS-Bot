@@ -51,6 +51,7 @@ var ZH = {
   "Not read yet": "未读",
   Search: "搜索",
   "New chat": "新对话",
+  Chat: "对话",
   "Back to chat": "返回对话",
   "New…": "新建",
   "Collapse sidebar": "收起侧边栏",
@@ -2574,8 +2575,12 @@ html[data-bt-collapsing] [class*="_frame"]:has(>[class*="_sidebarCol"]){transiti
 .bt-dot-wait{background:var(--bt-star)}
 .bt-side-foot{display:flex;padding-top:8px}
 
-.bt-head{position:relative;display:flex;justify-content:center;align-items:center;height:40px;flex:none;pointer-events:none}
+.bt-head{position:relative;display:flex;justify-content:center;align-items:center;gap:8px;height:40px;flex:none;pointer-events:none}
 .bt-pill{pointer-events:auto;display:inline-flex;align-items:center;gap:8px;height:40px;padding:7.5px 13.5px 7.5px 7.5px;border-radius:999px;background:var(--bt-main);border:.5px solid var(--bt-line-2);box-shadow:0 2px 8px -1px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);color:var(--bt-ink);font-family:inherit;font-size:14px;line-height:20px;cursor:pointer;max-width:70%;box-sizing:border-box;transition:background-color .12s ease,transform ${SPRING_TAP.duration}ms ${SPRING_TAP.easing}}
+.bt-fleet-pill{height:34px;padding:0 12px;gap:6px;font-size:13px}
+.bt-fleet-pill[aria-pressed=true]{border-color:color-mix(in srgb,var(--bt-accent) 45%,var(--bt-line-2));color:var(--bt-accent)}
+.bt-fleet-ico{display:inline-flex;align-items:center;width:15px;height:15px;color:var(--bt-accent)}
+.bt-fleet-ico svg{width:15px;height:15px}
 .bt-pill:hover{background:color-mix(in srgb,var(--bt-main),#777 9%)}
 .bt-pill:active{transform:scale(.965)}
 .bt-pill-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
@@ -10426,6 +10431,8 @@ function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus, useSe
   const roster = useRoster((value) => value);
   const selectedView = useStore?.((state) => state.view);
   const away = useConversationViews?.((views) => views.some((view) => view.id === selectedView && view.id !== "chat")) === true && typeof selectView === "function";
+  const hasFleet = useConversationViews?.((views) => views.some((view) => view.id === "fleet")) === true && typeof selectView === "function";
+  const fleetOpen = hasFleet && selectedView === "fleet";
   const title = useSessions((list) => list.byId[sessionId]?.displayTitle ?? list.byId[sessionId]?.title ?? "");
   const firstTurns = useSessions((list) => {
     const outline = list.projectionsBySession?.[sessionId]?.values?.turnOutline ?? list.byId[sessionId]?.projectionValues?.turnOutline;
@@ -10490,6 +10497,19 @@ function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus, useSe
       (0, import_react20.createElement)(MemoryNotice, { shown: memoryNotice }),
       (0, import_react20.createElement)("span", { className: "bt-pill-go", "aria-hidden": true }, (0, import_react20.createElement)(GoArrow))
     ),
+    hasFleet ? (0, import_react20.createElement)(
+      "button",
+      {
+        type: "button",
+        className: "bt-pill bt-fleet-pill",
+        "aria-pressed": fleetOpen,
+        "aria-label": fleetOpen ? t("Back to chat") : "Fleet observability",
+        title: fleetOpen ? t("Back to chat") : "Open multi-agent Fleet observability",
+        onClick: () => selectView(fleetOpen ? "chat" : "fleet")
+      },
+      (0, import_react20.createElement)("span", { className: "bt-fleet-ico", "aria-hidden": true }, (0, import_react20.createElement)(GaugeIcon)),
+      (0, import_react20.createElement)("span", { className: "bt-pill-name" }, fleetOpen ? t("Chat") : "Fleet")
+    ) : null,
     (0, import_react20.createElement)("span", { className: "bt-sr", role: "status" }, memoryNotice ? t("Memory updated") : ""),
     (0, import_react20.createElement)(NewMessagePills, { key: sessionId, sessionId, useSessions, useUi, useTurnClock }),
     (0, import_react20.createElement)(ActivityIndicator, { key: `activity:${sessionId}`, sessionId, useRoster, useSessionStatus, useSession, useLive, useWork, actions })
