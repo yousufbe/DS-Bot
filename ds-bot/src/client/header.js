@@ -43,6 +43,16 @@ function MemoryNotice({ shown }) {
     h('span', { className: 'bt-pill-mem-in', ref: inner }, h('span', { className: 'bt-pill-mem-ico' }, h(MemoryIcon)), label))
 }
 
+const CONSUMED_DEEP_LINKS = new Set()
+
+export function requestedViewFromLocation(loc = globalThis.window?.location) {
+  if (!loc) return null
+  const hash = typeof loc.hash === 'string' && loc.hash.startsWith('#') ? loc.hash.slice(1) : ''
+  if (new URLSearchParams(hash).get('view') === 'fleet') return 'fleet'
+  const search = typeof loc.search === 'string' && loc.search.startsWith('?') ? loc.search.slice(1) : ''
+  return new URLSearchParams(search).get('view') === 'fleet' ? 'fleet' : null
+}
+
 export function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus, useSession, useActivity, useMemoryNews, useTurnClock, useUi, useLive, useWork, useStore, useConversationViews, selectView, actions }) {
   const roster = useRoster(value => value)
   const selectedView = useStore?.(state => state.view)
@@ -51,6 +61,21 @@ export function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus
   const hasFleet = useConversationViews?.(views => views.some(view => view.id === 'fleet')) === true
     && typeof selectView === 'function'
   const fleetOpen = hasFleet && selectedView === 'fleet'
+  useEffect(() => {
+    if (!hasFleet || typeof selectView !== 'function') return undefined
+    const applyDeepLink = (force = false) => {
+      const loc = globalThis.window?.location
+      if (!loc || requestedViewFromLocation(loc) !== 'fleet') return
+      const key = `${loc.search ?? ''}${loc.hash ?? ''}`
+      if (!force && key !== '' && CONSUMED_DEEP_LINKS.has(key)) return
+      if (key !== '') CONSUMED_DEEP_LINKS.add(key)
+      selectView('fleet')
+    }
+    applyDeepLink(false)
+    const onHash = () => applyDeepLink(true)
+    globalThis.window?.addEventListener?.('hashchange', onHash)
+    return () => globalThis.window?.removeEventListener?.('hashchange', onHash)
+  }, [hasFleet, selectView])
   const title = useSessions(list => list.byId[sessionId]?.displayTitle ?? list.byId[sessionId]?.title ?? '')
   const firstTurns = useSessions((list) => {
     const outline = list.projectionsBySession?.[sessionId]?.values?.turnOutline ?? list.byId[sessionId]?.projectionValues?.turnOutline

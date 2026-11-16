@@ -23,7 +23,7 @@ runInNewContext(bundle.outputFiles[0].text, {
     return platform[name]
   },
 })
-const { HeaderPill } = module.exports
+const { HeaderPill, requestedViewFromLocation } = module.exports
 
 const roster = { byId: { a: { id: 'a', name: 'Chief', sessionId: 'a' } }, roomsById: {}, bots: [], exchangeTurns: {}, questions: {} }
 const hook = value => select => select(value)
@@ -173,4 +173,12 @@ test('a Bot header shows a 1-click Fleet pill when dsh-context fleet view is reg
   assert.equal(awayFleetBtn.props['aria-pressed'], true)
   awayFleetBtn.props.onClick()
   assert.equal(state.view, 'chat')
+})
+
+test('requestedViewFromLocation parses #view=fleet and ?view=fleet deep links', () => {
+  assert.equal(requestedViewFromLocation({ hash: '#view=fleet', search: '' }), 'fleet')
+  assert.equal(requestedViewFromLocation({ hash: '#view=fleet&tab=attention', search: '' }), 'fleet')
+  assert.equal(requestedViewFromLocation({ hash: '', search: '?view=fleet' }), 'fleet')
+  assert.equal(requestedViewFromLocation({ hash: '#view=chat', search: '' }), null)
+  assert.equal(requestedViewFromLocation(undefined), null)
 })

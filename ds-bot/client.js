@@ -10427,12 +10427,35 @@ function MemoryNotice({ shown }) {
     (0, import_react20.createElement)("span", { className: "bt-pill-mem-in", ref: inner }, (0, import_react20.createElement)("span", { className: "bt-pill-mem-ico" }, (0, import_react20.createElement)(MemoryIcon)), label)
   );
 }
+var CONSUMED_DEEP_LINKS = /* @__PURE__ */ new Set();
+function requestedViewFromLocation(loc = globalThis.window?.location) {
+  if (!loc) return null;
+  const hash = typeof loc.hash === "string" && loc.hash.startsWith("#") ? loc.hash.slice(1) : "";
+  if (new URLSearchParams(hash).get("view") === "fleet") return "fleet";
+  const search = typeof loc.search === "string" && loc.search.startsWith("?") ? loc.search.slice(1) : "";
+  return new URLSearchParams(search).get("view") === "fleet" ? "fleet" : null;
+}
 function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus, useSession, useActivity, useMemoryNews, useTurnClock, useUi, useLive, useWork, useStore, useConversationViews, selectView, actions }) {
   const roster = useRoster((value) => value);
   const selectedView = useStore?.((state) => state.view);
   const away = useConversationViews?.((views) => views.some((view) => view.id === selectedView && view.id !== "chat")) === true && typeof selectView === "function";
   const hasFleet = useConversationViews?.((views) => views.some((view) => view.id === "fleet")) === true && typeof selectView === "function";
   const fleetOpen = hasFleet && selectedView === "fleet";
+  (0, import_react20.useEffect)(() => {
+    if (!hasFleet || typeof selectView !== "function") return void 0;
+    const applyDeepLink = (force = false) => {
+      const loc = globalThis.window?.location;
+      if (!loc || requestedViewFromLocation(loc) !== "fleet") return;
+      const key = `${loc.search ?? ""}${loc.hash ?? ""}`;
+      if (!force && key !== "" && CONSUMED_DEEP_LINKS.has(key)) return;
+      if (key !== "") CONSUMED_DEEP_LINKS.add(key);
+      selectView("fleet");
+    };
+    applyDeepLink(false);
+    const onHash = () => applyDeepLink(true);
+    globalThis.window?.addEventListener?.("hashchange", onHash);
+    return () => globalThis.window?.removeEventListener?.("hashchange", onHash);
+  }, [hasFleet, selectView]);
   const title = useSessions((list) => list.byId[sessionId]?.displayTitle ?? list.byId[sessionId]?.title ?? "");
   const firstTurns = useSessions((list) => {
     const outline = list.projectionsBySession?.[sessionId]?.values?.turnOutline ?? list.byId[sessionId]?.projectionValues?.turnOutline;
